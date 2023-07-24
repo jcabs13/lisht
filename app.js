@@ -38,7 +38,8 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
-let port = process.env.PORT || 3000;
+// Use the PORT environment variable, or fall back to 3000 if it's not set
+const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
