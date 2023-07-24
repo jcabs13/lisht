@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const glide = require('@glideapps/tables');
+const fetch = require('cross-fetch'); // Add this line to import 'fetch' module
 
 const app = express();
 
