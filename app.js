@@ -1,37 +1,47 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const glide = require('@glideapps/tables');
-const fetch = require('cross-fetch'); // Add this line to import 'fetch' module
+const fetch = require('node-fetch'); // Use node-fetch instead of cross-fetch
 
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 
-// Initialize Glide table
-const searchTable = glide.table({
-    token: process.env.GLIDE_API_TOKEN, // Get the token from environment variables
-    app: "mtVYx3j3ot4FzRCdp3q4",
-    table: "native-table-MX8xNW5WWoJhW4fwEeN7",
-    columns: {
-        receivedFromWebhook: { type: "string", name: "NqLF1" }
-    }
-});
-
 // Define the POST endpoint at /webhook
-app.post('/webhook', async (req, res) => {   // Make the callback async
-    console.log(req.body);  // This will log the received JSON to your server console
+app.post('/webhook', async (req, res) => {
+    console.log(req.body); // This will log the received JSON to your server console
 
     // Extract the time and rowId from the request body
     const { time, rowId } = req.body;
 
-    // Update Glide table row
-    await searchTable.setRow(rowId, {
-        receivedFromWebhook: time
-    });
+    // Make a request to update the Glide table row
+    const glideApiToken = process.env.GLIDE_API_TOKEN;
+    const appUrl = 'https://api.glideapps.com';
+    const endpoint = `/v1/data/app/mtVYx3j3ot4FzRCdp3q4/native-table-MX8xNW5WWoJhW4fwEeN7/${rowId}`;
+    const requestOptions = {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${glideApiToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            NqLF1: time // Replace 'NqLF1' with the appropriate column name
+        }),
+    };
 
-    // Remember to send a response, or else the client will be left hanging
-    res.status(200).send('Received');
+    try {
+        const response = await fetch(appUrl + endpoint, requestOptions);
+        if (!response.ok) {
+            console.error('Failed to update Glide table row:', response.statusText);
+            return res.status(500).send('Failed to update Glide table row');
+        }
+
+        // Remember to send a response, or else the client will be left hanging
+        res.status(200).send('Received');
+    } catch (error) {
+        console.error('Error updating Glide table row:', error.message);
+        res.status(500).send('Error updating Glide table row');
+    }
 });
 
 // Define a GET endpoint at /
