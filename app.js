@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch'); // Use node-fetch instead of cross-fetch
+const fetch = require('node-fetch');
 
 const app = express();
 
@@ -16,23 +16,36 @@ app.post('/webhook', async (req, res) => {
 
     // Make a request to update the Glide table row
     const glideApiToken = process.env.GLIDE_API_TOKEN;
-    const appUrl = 'https://api.glideapp.io';
-    const endpoint = `/v1/data/app/mtVYx3j3ot4FzRCdp3q4/native-table-MX8xNW5WWoJhW4fwEeN7/${rowId}`;
+    const appID = "mtVYx3j3ot4FzRCdp3q4"; // Replace this with your Glide app ID
+    const tableName = "native-table-MX8xNW5WWoJhW4fwEeN7"; // Replace this with your table name
+    const endpoint = 'https://api.glideapp.io/api/function/mutateTables';
     const requestOptions = {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
             'Authorization': `Bearer ${glideApiToken}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            NqLF1: time // Replace 'NqLF1' with the appropriate column name
+            appID: appID,
+            mutations: [
+                {
+                    kind: 'set-columns-in-row',
+                    tableName: tableName,
+                    columnValues: {
+                        NqLF1: time // Replace 'NqLF1' with the appropriate column name
+                    },
+                    rowID: rowId
+                }
+            ]
         }),
     };
 
     try {
-        const response = await fetch(appUrl + endpoint, requestOptions);
-        if (!response.ok) {
-            console.error('Failed to update Glide table row:', response.statusText);
+        const response = await fetch(endpoint, requestOptions);
+        const responseData = await response.json();
+
+        if (!response.ok || responseData.error) {
+            console.error('Failed to update Glide table row:', responseData.error || response.statusText);
             return res.status(500).send('Failed to update Glide table row');
         }
 
@@ -55,3 +68,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
