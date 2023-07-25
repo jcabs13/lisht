@@ -16,7 +16,7 @@ app.post('/webhook', async (req, res) => {
 
     // Make a request to update the Glide table row
     const glideApiToken = process.env.GLIDE_API_TOKEN;
-    const appUrl = 'https://api.glideapps.com';
+    const appUrl = 'https://api.glideapp.io/api/function/mutateTables';
     const endpoint = `/v1/data/app/mtVYx3j3ot4FzRCdp3q4/native-table-MX8xNW5WWoJhW4fwEeN7/${rowId}`;
     const requestOptions = {
         method: 'PATCH',
